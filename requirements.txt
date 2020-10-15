@@ -1,0 +1,5 @@
+gym[atari]
+matplotlib
+pyyaml
+pygame
+opencv-python
