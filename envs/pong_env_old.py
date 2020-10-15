@@ -6,7 +6,6 @@ from pygame.locals import *
 import gym
 from gym import error, spaces, utils
 from gym.utils import seeding
-import time
 
 BLACK = (0, 0, 0)
 WHITE = (255, 255, 255)
@@ -32,23 +31,19 @@ class PongSinglePlayerEnv(gym.Env):
             bat_speed=bat_speed,
             max_num_rounds=max_num_rounds)
 
-    def _seed(self, seed_num=0):  # this is so that you can get consistent results
-        pass  # optionally, you could add: random.seed(random_num)
-        return
-
-    def step(self, action):
+    def _step(self, action):
         assert self.action_space.contains(action)
         bat_directions = [-1, 0, 1]
         rewards, done = self._game.step(bat_directions[action], None)
         obs = self._get_screen_img()
         return (obs, rewards[0], done, {})
 
-    def reset(self):
+    def _reset(self):
         self._game.reset_game()
         obs = self._get_screen_img()
         return obs
 
-    def render(self, mode='human', close=False):
+    def _render(self, mode='human', close=False):
         if close:
             if self._viewer is not None:
                 self._viewer.close()
@@ -124,7 +119,6 @@ class PongDoublePlayerEnv(PongSinglePlayerEnv):
         return obs, obs_flip
 
 
-
 class PongGame():
     def __init__(self,
                  has_double_players=False,
@@ -136,13 +130,13 @@ class PongGame():
                  ball_size=4,
                  ball_speed=1,
                  bat_speed=1,
-                 max_num_rounds=200,
+                 max_num_rounds=20,
                  max_step_per_round=1000):
         self._max_num_rounds = max_num_rounds
         self._has_double_players = has_double_players
         self._max_step_per_round = max_step_per_round
         self._num_rounds = 0
-        self._powerup = -1
+
         self._arena = Arena(window_size, top_border_thickness)
         self._ball = Ball(self._arena.centerx - ball_size // 2,
                           self._arena.centery - ball_size // 2, ball_size,
@@ -163,14 +157,7 @@ class PongGame():
         self.reset_game()
 
     def step(self, left_bat_move_dir, right_bat_move_dir):
-
         self._num_steps += 1
-
-        if np.random.random() < 0.005 and self._powerup == -1:
-            self._powerup = Powerup(self)
-        elif self._powerup != -1:
-            self._powerup.step()
-
         self._left_bat.move(self._arena, left_bat_move_dir)
         if self._has_double_players:
             self._right_bat.move(self._arena, right_bat_move_dir)
@@ -203,9 +190,6 @@ class PongGame():
         self._ball.reset()
         self._num_rounds += 1
         self._num_steps = 0
-        self._left_bat.reset_round()
-        self._right_bat.reset_round()
-        self._powerup = -1
 
     def reset_game(self):
         self._score_left, self._score_right = 0, 0
@@ -213,16 +197,12 @@ class PongGame():
         self._left_bat.reset()
         self._right_bat.reset()
         self._num_rounds = 0
-        self._powerup = -1
 
     def draw(self, surface):
         self._arena.draw(surface)
         self._ball.draw(surface)
         self._left_bat.draw(surface)
         self._right_bat.draw(surface)
-        if self._powerup != -1:
-            self._powerup.draw(surface)
-
 
     def draw_scoreboard(self, surface):
         self._scoreboard.draw(surface, self._score_left, self._score_right)
@@ -230,10 +210,7 @@ class PongGame():
 
 class Arena(pygame.sprite.Sprite):
     def __init__(self, window_size, top_border_thickness):
-
         window_width, window_height = window_size
-        self.window_width = window_width
-        self.window_height = window_height
         self._rect = pygame.Rect(0, top_border_thickness, window_width,
                                  window_width)
 
@@ -265,14 +242,6 @@ class Arena(pygame.sprite.Sprite):
     def centery(self):
         return self._rect.centery
 
-    @property
-    def windowWidth(self):
-        return self.window_width
-
-    @property
-    def windowHeight(self):
-        return self.window_height
-
 
 class Ball(pygame.sprite.Sprite):
     def __init__(self, x, y, size, speed):
@@ -285,9 +254,9 @@ class Ball(pygame.sprite.Sprite):
         self._rect.x = self._x_init
         self._rect.y = self._y_init
         init_speed_x = float(self._speed)
-        #init_speed_y = random.uniform(self._speed * 0.3, self._speed)
+        init_speed_y = random.uniform(self._speed * 0.3, self._speed)
         self._speed_x = random.choice([-init_speed_x, init_speed_x])
-        self._speed_y = 0#random.choice([-init_speed_x, 0, init_speed_x])#random.choice([-init_speed_y, init_speed_y])
+        self._speed_y = random.choice([-init_speed_y, init_speed_y])
 
     def draw(self, surface):
         pygame.draw.rect(surface, WHITE, self._rect)
@@ -313,14 +282,14 @@ class Ball(pygame.sprite.Sprite):
               y_on_left_bat + self._rect.height >= left_bat.top and
               y_on_left_bat <= left_bat.bottom and
               prev_ball_left > left_bat.right):
-            self._bounce('x', left_bat.current_move)
+            self._bounce('x', left_bat.current_move * 0.7)
             self._rect.left = left_bat.right
             self._rect.y = y_on_left_bat
         elif (self._speed_x > 0 and self._rect.right >= right_bat.left and
               y_on_right_bat + self._rect.height >= right_bat.top and
               y_on_right_bat <= right_bat.bottom and
               prev_ball_right < right_bat.left):
-            self._bounce('x', right_bat.current_move)
+            self._bounce('x', right_bat.current_move * 0.7)
             self._rect.right = right_bat.left
             self._rect.y = y_on_right_bat
 
@@ -357,14 +326,12 @@ class Ball(pygame.sprite.Sprite):
 
     @property
     def centery(self):
-        return self._rect.centerx
+        return self._rect.centery
 
 
 class Bat(pygame.sprite.Sprite):
     def __init__(self, x, y, width, height, speed):
         self._x_init, self._y_init = x, y
-        self._height_init = height
-        self._width_init = width
         self._speed = speed
         self._current_move = 0
         self._rect = pygame.Rect(x, y, width, height)
@@ -381,10 +348,8 @@ class Bat(pygame.sprite.Sprite):
             self._rect.y += arena.top - self._rect.top
 
     def reset(self):
-        self._rect = pygame.Rect(self._x_init, self._y_init, self._width_init, self._height_init)
-
-    def reset_round(self):
-        self._rect = pygame.Rect(self._rect.x, self._rect.y, self._width_init, self._height_init)
+        self._rect.x = self._x_init
+        self._rect.y = self._y_init
 
     @property
     def left(self):
@@ -407,8 +372,6 @@ class Bat(pygame.sprite.Sprite):
         return self._current_move
 
 
-
-
 class AutoBat(Bat):
     def move(self, arena, ball):
         #If ball is moving away from paddle, center bat
@@ -419,9 +382,9 @@ class AutoBat(Bat):
                 self._rect.y -= self._speed
         #if ball moving towards bat, track its movement.
         elif ball.speed_x > 0:
-            if self._rect.centery + self._rect.height/2 < ball._rect.y:
+            if self._rect.centery < ball.centery:
                 self._rect.y += self._speed
-            elif self._rect.centery - self._rect.height/2 > ball._rect.y:
+            else:
                 self._rect.y -= self._speed
         if self._rect.bottom > arena.bottom:
             self._rect.y += arena.bottom - self._rect.bottom
@@ -442,60 +405,16 @@ class Scoreboard():
         rect.topleft = (self._x, self._y)
         surface.blit(result_surf, rect)
 
-class Powerup(pygame.sprite.Sprite):
-
-    def __init__(self, game):
-        colors = [(255, 0, 0), (0, 255, 0), (0, 0, 255), (255, 255, 0)]
-        self._game = game
-        self._type = np.random.randint(4)
-        self._x = np.random.randint(40, 120)
-        self._y = np.random.randint(34, 210-34-14)
-        self._used = False
-        self._color = colors[self._type]
-        self._rect = pygame.Rect(self._x, self._y, 6, 6)
-
-    def draw(self, surface):
-        if not self._used:
-            pygame.draw.rect(surface, self._color, self._rect)
-
-    def step(self):
-        ball = self._game._ball._rect
-        if self._x < ball.centerx and self._x+6 > ball.centerx and self._y < ball.centery and self._y+6 > ball.centery and not self._used:
-            self._used = True
-
-            #Large paddle
-            if self._type == 0:
-                left_bat = self._game._left_bat
-                left_bat._rect = pygame.Rect(left_bat._rect.x, left_bat._rect.y, left_bat._width_init, 25)
-                right_bat = self._game._right_bat
-                right_bat._rect = pygame.Rect(right_bat._rect.x, right_bat._rect.y, right_bat._width_init, 25)
-            #Small Paddle
-            if self._type == 1:
-                left_bat = self._game._left_bat
-                left_bat._rect = pygame.Rect(left_bat._rect.x, left_bat._rect.y, left_bat._width_init, 10)
-                right_bat = self._game._right_bat
-                right_bat._rect = pygame.Rect(right_bat._rect.x, right_bat._rect.y, right_bat._width_init, 10)
-            #Slow Ball
-            if self._type == 2:
-                ball = self._game._ball
-                ball._speed_x = ball._speed_x*0.5
-                ball._speed_y = ball._speed_y * 0.5
-            #Fast Ball
-            if self._type == 3:
-                ball = self._game._ball
-                ball._speed_x = ball._speed_x * 1.5
-                ball._speed_y = ball._speed_y * 1.5
 
 #Main function
 def main():
     pygame.init()
     pygame.display.set_caption('Pong')
     pygame.mouse.set_visible(0)  # make cursor invisible
-    surface = pygame.display.set_mode((320, 420))
+    surface = pygame.display.set_mode((400, 300))
     fps_clock = pygame.time.Clock()
 
-    game = PongGame(window_size=(320, 420), ball_speed = 2, bat_speed = 4, bat_height = 30)
-    left_direction = 0
+    game = PongGame(window_size=(400, 300), speed=4)
 
     while True:  #main game loop
         for event in pygame.event.get():
@@ -503,21 +422,15 @@ def main():
                 pygame.quit()
                 sys.exit()
             # mouse movement commands
-            elif event.type == pygame.KEYDOWN:
-                if event.key == K_UP:
-                    left_direction = -1
-                elif event.key == K_DOWN:
-                    left_direction = 1
-            elif event.type == pygame.KEYUP:
-                    left_direction = 0
+            #elif event.type == MOUSEMOTION:
+            #game.bats['user'].move(event.pos)
 
-        _, done = game.step(left_direction, 0)
+        _, done = game.step(1, -1)
         if done:
             game.reset()
         game.draw(surface)
-        game.draw_scoreboard(surface)
         pygame.display.update()
-        fps_clock.tick(60)
+        fps_clock.tick(120)
 
 
 if __name__ == '__main__':
