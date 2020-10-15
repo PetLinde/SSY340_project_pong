@@ -49,12 +49,13 @@ def run_async(conf):
         slave_agent = master_agent.create_async_learner()
         slave_agent.reset()
         return_list = []
-        for episode in xrange(conf['num_episodes_per_process']):
+        for episode in range(conf['num_episodes_per_process']):
             cum_return = 0.0
             observation = env.reset()
             done = False
             while not done:
                 action = slave_agent.act(observation)
+                action = action.numpy()
                 next_observation, reward, done, _ = env.step(action)
                 slave_agent.learn(reward, next_observation, done)
                 observation = next_observation
@@ -69,14 +70,14 @@ def run_async(conf):
                 master_agent.save_model(model_filename)
         env.close()
 
-    processes = []
-    for process_id in range(0, conf['num_processes']):
-        p = mp.Process(target=learn_thread, args=(process_id, ))
-        p.start()
-        processes.append(p)
-    for p in processes:
-        p.join()
-
+    # processes = []
+    # for process_id in range(0, conf['num_processes']):
+        # p = mp.Process(target=learn_thread, args=(process_id, ))
+        # p.start()
+        # processes.append(p)
+    # for p in processes:
+        # p.join()
+    learn_thread(1)
 
 if __name__ == '__main__':
     os.environ['OMP_NUM_THREADS'] = '1'
