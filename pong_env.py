@@ -136,13 +136,13 @@ class PongGame():
                  ball_size=4,
                  ball_speed=1,
                  bat_speed=1,
-                 max_num_rounds=20,
+                 max_num_rounds=200,
                  max_step_per_round=1000):
         self._max_num_rounds = max_num_rounds
         self._has_double_players = has_double_players
         self._max_step_per_round = max_step_per_round
         self._num_rounds = 0
-        self._powerups = []
+        self._powerup = -1
         self._arena = Arena(window_size, top_border_thickness)
         self._ball = Ball(self._arena.centerx - ball_size // 2,
                           self._arena.centery - ball_size // 2, ball_size,
@@ -166,10 +166,10 @@ class PongGame():
 
         self._num_steps += 1
 
-        if np.random.random() < 0.005:
-            self._powerups.append(Powerup(self))
-        for p in self._powerups:
-            p.step()
+        if np.random.random() < 0.005 and self._powerup == -1:
+            self._powerup = Powerup(self)
+        elif self._powerup != -1:
+            self._powerup.step()
 
         self._left_bat.move(self._arena, left_bat_move_dir)
         if self._has_double_players:
@@ -205,6 +205,7 @@ class PongGame():
         self._num_steps = 0
         self._left_bat.reset_round()
         self._right_bat.reset_round()
+        self._powerup = -1
 
     def reset_game(self):
         self._score_left, self._score_right = 0, 0
@@ -212,15 +213,15 @@ class PongGame():
         self._left_bat.reset()
         self._right_bat.reset()
         self._num_rounds = 0
-        self._powerups = []
+        self._powerup = -1
 
     def draw(self, surface):
         self._arena.draw(surface)
         self._ball.draw(surface)
         self._left_bat.draw(surface)
         self._right_bat.draw(surface)
-        for p in self._powerups:
-            p.draw(surface)
+        if self._powerup != -1:
+            self._powerup.draw(surface)
 
 
     def draw_scoreboard(self, surface):
@@ -284,9 +285,9 @@ class Ball(pygame.sprite.Sprite):
         self._rect.x = self._x_init
         self._rect.y = self._y_init
         init_speed_x = float(self._speed)
-        init_speed_y = random.uniform(self._speed * 0.3, self._speed)
+        #init_speed_y = random.uniform(self._speed * 0.3, self._speed)
         self._speed_x = random.choice([-init_speed_x, init_speed_x])
-        self._speed_y = random.choice([-init_speed_y, init_speed_y])
+        self._speed_y = 0#random.choice([-init_speed_x, 0, init_speed_x])#random.choice([-init_speed_y, init_speed_y])
 
     def draw(self, surface):
         pygame.draw.rect(surface, WHITE, self._rect)
@@ -312,14 +313,14 @@ class Ball(pygame.sprite.Sprite):
               y_on_left_bat + self._rect.height >= left_bat.top and
               y_on_left_bat <= left_bat.bottom and
               prev_ball_left > left_bat.right):
-            self._bounce('x', left_bat.current_move * 0.7)
+            self._bounce('x', left_bat.current_move)
             self._rect.left = left_bat.right
             self._rect.y = y_on_left_bat
         elif (self._speed_x > 0 and self._rect.right >= right_bat.left and
               y_on_right_bat + self._rect.height >= right_bat.top and
               y_on_right_bat <= right_bat.bottom and
               prev_ball_right < right_bat.left):
-            self._bounce('x', right_bat.current_move * 0.7)
+            self._bounce('x', right_bat.current_move)
             self._rect.right = right_bat.left
             self._rect.y = y_on_right_bat
 
@@ -418,9 +419,9 @@ class AutoBat(Bat):
                 self._rect.y -= self._speed
         #if ball moving towards bat, track its movement.
         elif ball.speed_x > 0:
-            if self._rect.centery < ball.centery:
+            if self._rect.centery + self._rect.height/2 < ball._rect.y:
                 self._rect.y += self._speed
-            else:
+            elif self._rect.centery - self._rect.height/2 > ball._rect.y:
                 self._rect.y -= self._speed
         if self._rect.bottom > arena.bottom:
             self._rect.y += arena.bottom - self._rect.bottom
@@ -490,10 +491,11 @@ def main():
     pygame.init()
     pygame.display.set_caption('Pong')
     pygame.mouse.set_visible(0)  # make cursor invisible
-    surface = pygame.display.set_mode((400, 300))
+    surface = pygame.display.set_mode((320, 420))
     fps_clock = pygame.time.Clock()
 
-    game = PongGame(window_size=(400, 300), speed=4)
+    game = PongGame(window_size=(320, 420), ball_speed = 2, bat_speed = 4, bat_height = 30)
+    left_direction = 0
 
     while True:  #main game loop
         for event in pygame.event.get():
@@ -501,15 +503,21 @@ def main():
                 pygame.quit()
                 sys.exit()
             # mouse movement commands
-            #elif event.type == MOUSEMOTION:
-            #game.bats['user'].move(event.pos)
+            elif event.type == pygame.KEYDOWN:
+                if event.key == K_UP:
+                    left_direction = -1
+                elif event.key == K_DOWN:
+                    left_direction = 1
+            elif event.type == pygame.KEYUP:
+                    left_direction = 0
 
-        _, done = game.step(1, -1)
+        _, done = game.step(left_direction, 0)
         if done:
             game.reset()
         game.draw(surface)
+        game.draw_scoreboard(surface)
         pygame.display.update()
-        fps_clock.tick(120)
+        fps_clock.tick(60)
 
 
 if __name__ == '__main__':
