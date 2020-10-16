@@ -92,7 +92,7 @@ class PongDoublePlayerEnv(PongSinglePlayerEnv):
         pygame.init()
         self._surface = pygame.Surface((SCREEN_WIDTH, SCREEN_HEIGHT))
 
-        self._viewer = None
+        self._viewer = 1
         self._game = PongGame(
             has_double_players=True,
             window_size=(SCREEN_WIDTH, SCREEN_HEIGHT),
@@ -100,7 +100,7 @@ class PongDoublePlayerEnv(PongSinglePlayerEnv):
             bat_speed=bat_speed,
             max_num_rounds=max_num_rounds)
 
-    def _step(self, action):
+    def step(self, action):
         assert self.action_space.contains(action)
         left_player_action, right_player_action = action
         bat_directions = [-1, 0, 1]
@@ -109,7 +109,7 @@ class PongDoublePlayerEnv(PongSinglePlayerEnv):
         obs = self._get_screen_img_double_player()
         return (obs, rewards, done, {})
 
-    def _reset(self):
+    def reset(self):
         self._game.reset_game()
         obs = self._get_screen_img_double_player()
         return obs
@@ -288,9 +288,9 @@ class Ball(pygame.sprite.Sprite):
         self._rect.x = self._x_init
         self._rect.y = self._y_init
         init_speed_x = float(self._speed)
-        #init_speed_y = random.uniform(self._speed * 0.3, self._speed)
+        init_speed_y = random.uniform(self._speed * 0.3, self._speed)
         self._speed_x = random.choice([-init_speed_x, init_speed_x])
-        self._speed_y = 0#random.choice([-init_speed_x, 0, init_speed_x])#random.choice([-init_speed_y, init_speed_y])
+        self._speed_y = random.choice([-init_speed_y, init_speed_y])
 
     def draw(self, surface):
         pygame.draw.rect(surface, WHITE, self._rect)
@@ -497,8 +497,8 @@ def main():
     surface = pygame.display.set_mode((320, 420))
     fps_clock = pygame.time.Clock()
 
-    game = PongGame(window_size=(320, 420), ball_speed = 2, bat_speed = 4, bat_height = 30, \
-                    enable_powerups = True)
+    game = PongGame(window_size=(320, 420), has_double_players = True,ball_speed = 2, bat_speed = 4, bat_height = 30, \
+                    enable_powerups = False)
     left_direction = 0
 
     while True:  #main game loop

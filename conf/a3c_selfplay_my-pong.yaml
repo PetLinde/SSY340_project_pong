@@ -9,5 +9,5 @@ num_episodes_per_process: 1000
 init_model_path: ''
 checkpoint_freq: 20
 checkpoint_dir: 'checkpoints'
-use_atari_wrapper: True
+use_atari_wrapper: False
 monitor_dir: ''

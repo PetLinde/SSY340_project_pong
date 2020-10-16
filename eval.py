@@ -5,10 +5,12 @@ import copy
 import gym
 from gym import wrappers
 from agents.a3c import A3CAgent
+import torch
 import torch.multiprocessing as mp
 from envs.pong_env import PongSinglePlayerEnv
 from wrappers.process_frame import AtariRescale42x42Wrapper
 from wrappers.process_frame import NormalizeWrapper
+from yaml import CLoader as Loader
 
 
 def create_agent(conf, action_space, observation_space):
@@ -41,7 +43,7 @@ def run_eval(conf, num_episodes, eval_model_path):
     agent.load_model(eval_model_path)
 
     sum_return = 0.0
-    for episode in xrange(num_episodes):
+    for episode in range(num_episodes):
         cum_return = 0.0
         observation = env.reset()
         done = False
@@ -66,7 +68,7 @@ def run_selfplay_eval(conf, num_episodes, eval_model_path):
     opponent_agent = copy.deepcopy(agent)
 
     sum_return = 0.0
-    for episode in xrange(num_episodes):
+    for episode in range(num_episodes):
         cum_return = 0.0
         observation = env.reset()
         done = False
@@ -87,18 +89,21 @@ def run_selfplay_eval(conf, num_episodes, eval_model_path):
 
 
 def run_combat_eval(conf, num_episodes, eval_model_path, eval_opponent_path):
+    device = torch.device("cuda" if torch.cuda.is_available() 
+                                  else "cpu")
     env = create_env(conf, monitor_on=True)
 
     agent = create_agent(conf, env.action_space.spaces[0],
                          env.observation_space.spaces[0])
     agent.load_model(eval_model_path)
+    agent._shared_model = agent._shared_model.to(device)
 
     opponent_agent = create_agent(conf, env.action_space.spaces[0],
                                   env.observation_space.spaces[0])
     opponent_agent.load_model(eval_opponent_path)
-
+    opponent_agent._shared_model = opponent_agent._shared_model.to(device)
     sum_return = 0
-    for episode in xrange(num_episodes):
+    for episode in range(num_episodes):
         cum_return = 0.0
         observation = env.reset()
         done = False
@@ -106,11 +111,14 @@ def run_combat_eval(conf, num_episodes, eval_model_path, eval_opponent_path):
         opponent_agent.reset()
         while not done:
             obs_A, obs_B = observation
-            action_A = agent.act(obs_A, greedy=True)
-            action_B = opponent_agent.act(obs_B, greedy=True)
+            action_A = agent.act(obs_A, greedy=False)
+            action_B = opponent_agent.act(obs_B, greedy=False)
+            action_A = action_A.to("cpu").numpy()
+            action_B = action_B.to("cpu").numpy()
             next_observation, reward, done, _ = env.step((action_A, action_B))
             observation = next_observation
             cum_return += reward[0]
+            
         sum_return += cum_return
         print("Episode %d/%d Return: %f." %
               (episode + 1, num_episodes, cum_return))
@@ -149,7 +157,7 @@ if __name__ == '__main__':
         help="Model path for the opponent agent, only used in combat mode.")
     args = parser.parse_args()
 
-    conf = yaml.load(file(args.config, 'r'))
+    conf = yaml.load(open(args.config, 'r'),Loader = Loader)
 
     if args.mode == 'selfplay':
         run_selfplay_eval(conf, args.num_episodes, args.eval_model_path)

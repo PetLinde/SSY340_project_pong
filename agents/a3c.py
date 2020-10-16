@@ -16,10 +16,12 @@ class ActorCriticNet(nn.Module):
         self.conv2 = nn.Conv2d(32, 32, 3, stride=2, padding=1)
         self.conv3 = nn.Conv2d(32, 32, 3, stride=2, padding=1)
         self.conv4 = nn.Conv2d(32, 32, 3, stride=2, padding=1)
-        self.lstm = nn.LSTMCell(320, 256)#(32 * 3 * 3, 256)
+        self.lstm = nn.LSTMCell(320, 256)#32 * 3 * 3, 256)
         self.critic_fc = nn.Linear(256, 1)
         self.actor_fc = nn.Linear(256, num_output)
-        self.softmax = nn.Softmax()
+        self.softmax = nn.Softmax(dim=1)
+        self.device = torch.device("cuda" if torch.cuda.is_available() 
+                                  else "cpu")
 
     def forward(self, x, hc): #(h, c)
         h, c = hc
@@ -28,8 +30,11 @@ class ActorCriticNet(nn.Module):
             h = Variable(torch.zeros(1, 256))
         if c is None:
             c = Variable(torch.zeros(1, 256))
-        
-        x = x.float() # OUR OWN MAKING
+        x = x.to(self.device)
+        h = h.to(self.device)
+        c = c.to(self.device)
+
+        x = x.float()
         x = F.elu(self.conv1(x))
         x = F.elu(self.conv2(x))
         x = F.elu(self.conv3(x))
@@ -110,7 +115,13 @@ class _A3CSlaveAgent(BaseAgent):
                  t_max=20):
         if not isinstance(action_space, gym.spaces.Discrete):
             raise TypeError("Action space type should be Discrete.")
+
+        self.device = torch.device("cuda" if torch.cuda.is_available() 
+                                  else "cpu")
         self._shared_model = shared_model
+
+        shared_model = shared_model.to(self.device)
+
         self._learning_rate = learning_rate
         self._discount = discount
         self._t_max = t_max
@@ -118,6 +129,9 @@ class _A3CSlaveAgent(BaseAgent):
         self._local_model = ActorCriticNet(
             num_channel_input=observation_space.shape[0],
             num_output=action_space.n)
+
+        self._local_model = self._local_model.to(self.device)
+
         self._optimizer = optim.Adam(
             self._shared_model.parameters(), lr=self._learning_rate)
 
@@ -156,7 +170,7 @@ class _A3CSlaveAgent(BaseAgent):
         self._entropies.append(entropy)
 
         if done or len(self._rewards) >= self._t_max:
-            R = torch.zeros(1, 1)
+            R = torch.zeros(1, 1).to(self.device)
             if not done:
                 _, value, _ = self._local_model(
                     Variable(torch.from_numpy(observation).unsqueeze(0)),
@@ -164,8 +178,7 @@ class _A3CSlaveAgent(BaseAgent):
                 R = value.data
             self._values.append(Variable(R))
             R = Variable(R)
-            gae = torch.zeros(1, 1)
-
+            gae = torch.zeros(1, 1).to(self.device)
             # compute n-step loss
             value_loss, policy_loss = 0, 0
             for i in reversed(range(len(self._rewards))):
@@ -182,7 +195,7 @@ class _A3CSlaveAgent(BaseAgent):
             # compute grad and optimize
             self._optimizer.zero_grad()
             (policy_loss + 0.5 * value_loss).backward()
-            torch.nn.utils.clip_grad_norm(self._local_model.parameters(), 40)
+            torch.nn.utils.clip_grad_norm_(self._local_model.parameters(), 40)
             self._share_grads(self._local_model)
             self._optimizer.step()
 
