@@ -1,11 +1,21 @@
 2020-10-15:
 	Created repo.
-  Added the code from https://github.com/xinghai-sun/deep-rl.
-  Installed the required dependencies.
-  Tweaked pong_env.py so that you can run only that and play against a decent opponent. Added powerups.
-  There were a lot of bugs, for example when the ball hit the roof and stayed there, had to change a lot regarding the velocity for that to work.
-  Tried running "python run_async.py --config conf/a3c_my-pong.yaml", but there were a lot of bugs here as well. All of the code is written in Python 2, which to some extent does not work in Python 3.
-  Didn't get multiprocessing to work.
-  Didn't get the AtariRescale42x42Wrapper to work.
-  Finally started the first training.
-  TODO: Use GPU instead
+	Added the code from https://github.com/xinghai-sun/deep-rl.
+  	Installed the required dependencies.
+  	Tweaked pong_env.py so that you can run only that and play against a decent opponent with the up and down keys. Added powerups.
+  	There were a lot of bugs, for example when the ball hit the roof and stayed there, had to change a lot regarding the velocity for that to work.
+  	Tried running "python run_async.py --config conf/a3c_my-pong.yaml", but there were a lot of bugs here as well. All of the code is written in Python 2, which to some extent does not work in Python 3.
+  	Didn't get multiprocessing to work.
+  	Didn't get the AtariRescale42x42Wrapper to work.
+  	Finally started the first training.
+	Example of changes from Python2 to Python3: xrange -> range, file() -> open() + add Loader=Loader with 'from yaml import CLoader as Loader'
+	The input (h, c) to 'forward' in 'a3c.py' seems a bit strange. Handled it like a single input instead of tuple and divided it into h and c afterwards
+  	TODO: Use GPU instead
+
+2020-10-16:
+	Managed to get the network to run on GPU, if present.
+	Got multiprocessing working. Had to move 'learn_thread' and 'create_env' out of 'run_async', and fix the respective inputs.
+	Got AtariRescale42x42Wrapper to work, had to remove '_' from the two observation methods in 'process_frame'.
+	Got evaluation to start working.
+	Started the recordings in training and evaluation, had to run 'conda install -c conda-forge ffmpeg'.
+	TODO: Get self-play working, get a decent agent trained, add powerups
