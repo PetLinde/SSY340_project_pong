@@ -18,4 +18,5 @@
 	Got AtariRescale42x42Wrapper to work, had to remove '_' from the two observation methods in 'process_frame'.
 	Got evaluation to start working.
 	Started the recordings in training and evaluation, had to run 'conda install -c conda-forge ffmpeg'.
+	Changed 'reset_round', in 'Bat', in 'pong_env.py' so that the bats gets recentered in the middle at every round. This should affect the training greatly.
 	TODO: Get self-play working, get a decent agent trained, add powerups
