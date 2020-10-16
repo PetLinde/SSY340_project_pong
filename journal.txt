@@ -1,0 +1,11 @@
+2020-10-15:
+	Created repo.
+  Added the code from https://github.com/xinghai-sun/deep-rl.
+  Installed the required dependencies.
+  Tweaked pong_env.py so that you can run only that and play against a decent opponent. Added powerups.
+  There were a lot of bugs, for example when the ball hit the roof and stayed there, had to change a lot regarding the velocity for that to work.
+  Tried running "python run_async.py --config conf/a3c_my-pong.yaml", but there were a lot of bugs here as well. All of the code is written in Python 2, which to some extent does not work in Python 3.
+  Didn't get multiprocessing to work.
+  Didn't get the AtariRescale42x42Wrapper to work.
+  Finally started the first training.
+  TODO: Use GPU instead
