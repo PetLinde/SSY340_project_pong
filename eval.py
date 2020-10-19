@@ -30,6 +30,7 @@ def create_env(conf, monitor_on=False):
     env = gym.make(conf['env'])
     if conf['monitor_dir'] != '' and monitor_on:
         env = wrappers.Monitor(env, conf['monitor_dir'], force=True)
+        print(env)
     if conf['use_atari_wrapper']:
         env = AtariRescale42x42Wrapper(env)
         env = NormalizeWrapper(env)
@@ -117,8 +118,8 @@ def run_combat_eval(conf, num_episodes, eval_model_path, eval_opponent_path):
             action_B = action_B.to("cpu").numpy()
             next_observation, reward, done, _ = env.step((action_A, action_B))
             observation = next_observation
-            cum_return += reward[0]
-            
+            cum_return += reward[0] #reward if double
+
         sum_return += cum_return
         print("Episode %d/%d Return: %f." %
               (episode + 1, num_episodes, cum_return))

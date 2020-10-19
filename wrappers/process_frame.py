@@ -16,6 +16,7 @@ class AtariRescale42x42Wrapper(gym.ObservationWrapper):
             self.observation_space = gym.spaces.Box(0.0, 1.0, [1, 42, 42])
 
     def observation(self, observation):
+
         if isinstance(observation, tuple):
             return tuple([self._process_frame(obs) for obs in observation])
         else:

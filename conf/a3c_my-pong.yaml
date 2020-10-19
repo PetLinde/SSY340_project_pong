@@ -5,9 +5,9 @@ learning_rate: 0.0001
 discount: 0.99
 t_max: 20
 num_processes: 4
-num_episodes_per_process: 100
+num_episodes_per_process: 10000
 init_model_path: ''
-checkpoint_freq: 20
+checkpoint_freq: 100
 checkpoint_dir: 'checkpoints'
-use_atari_wrapper: False
-monitor_dir: ''
+use_atari_wrapper: True
+monitor_dir: 'Training-monitoring'

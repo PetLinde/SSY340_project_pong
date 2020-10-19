@@ -92,7 +92,7 @@ class PongDoublePlayerEnv(PongSinglePlayerEnv):
         pygame.init()
         self._surface = pygame.Surface((SCREEN_WIDTH, SCREEN_HEIGHT))
 
-        self._viewer = 1
+        self._viewer = None
         self._game = PongGame(
             has_double_players=True,
             window_size=(SCREEN_WIDTH, SCREEN_HEIGHT),
@@ -107,7 +107,7 @@ class PongDoublePlayerEnv(PongSinglePlayerEnv):
         rewards, done = self._game.step(bat_directions[left_player_action],
                                         bat_directions[right_player_action])
         obs = self._get_screen_img_double_player()
-        return (obs, rewards, done, {})
+        return (obs, rewards[0], done, {})
 
     def reset(self):
         self._game.reset_game()
@@ -288,7 +288,7 @@ class Ball(pygame.sprite.Sprite):
         self._rect.x = self._x_init
         self._rect.y = self._y_init
         init_speed_x = float(self._speed)
-        init_speed_y = random.uniform(self._speed * 0.3, self._speed)
+        init_speed_y = random.uniform(self._speed * 0.1, self._speed*0.5)
         self._speed_x = random.choice([-init_speed_x, init_speed_x])
         self._speed_y = random.choice([-init_speed_y, init_speed_y])
 
@@ -387,7 +387,8 @@ class Bat(pygame.sprite.Sprite):
         self._rect = pygame.Rect(self._x_init, self._y_init, self._width_init, self._height_init)
 
     def reset_round(self):
-        self._rect = pygame.Rect(self._rect.x, self._rect.y, self._width_init, self._height_init)
+        self._rect = pygame.Rect(self._x_init, self._y_init, self._width_init, self._height_init)
+        #pygame.Rect(self._rect.x, self._rect.y, self._width_init, self._height_init) #Dosn't reset position
 
     @property
     def left(self):
@@ -494,10 +495,10 @@ def main():
     pygame.init()
     pygame.display.set_caption('Pong')
     pygame.mouse.set_visible(0)  # make cursor invisible
-    surface = pygame.display.set_mode((320, 420))
+    surface = pygame.display.set_mode((160, 210))
     fps_clock = pygame.time.Clock()
 
-    game = PongGame(window_size=(320, 420), has_double_players = True,ball_speed = 2, bat_speed = 4, bat_height = 30, \
+    game = PongGame(window_size=(160, 210), has_double_players = True,ball_speed = 4, bat_speed = 4, bat_height = 15, \
                     enable_powerups = False)
     left_direction = 0
 

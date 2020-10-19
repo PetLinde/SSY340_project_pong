@@ -16,7 +16,7 @@ class ActorCriticNet(nn.Module):
         self.conv2 = nn.Conv2d(32, 32, 3, stride=2, padding=1)
         self.conv3 = nn.Conv2d(32, 32, 3, stride=2, padding=1)
         self.conv4 = nn.Conv2d(32, 32, 3, stride=2, padding=1)
-        self.lstm = nn.LSTMCell(320, 256)#32 * 3 * 3, 256)
+        self.lstm = nn.LSTMCell(32 * 3 * 3, 256)
         self.critic_fc = nn.Linear(256, 1)
         self.actor_fc = nn.Linear(256, num_output)
         self.softmax = nn.Softmax(dim=1)
