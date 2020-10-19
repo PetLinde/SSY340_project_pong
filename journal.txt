@@ -24,8 +24,8 @@
 2020-10-19
 	Trained a A3C agent during the weekend, 10k episodes on 4 processes, with recording.
 	Checked the recordings, they seem alright even though it is not a brilliant player yet.
-	Got self-play working, had to make changes like in the previous files.
+	Got self-play working, had to make changes like in the previous files. Trained for 1k episodes.
 	Not possible to record self-play training, or at least we do not know how to fix the bug.
-	Started writing on the report
-	Started evaluating different levels of the trained agents against former versions of itself and the AutoBat
+	Started writing on the report.
+	Started evaluating different levels of the trained agents against former versions of itself and the AutoBat.
 	
