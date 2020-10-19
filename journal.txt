@@ -20,3 +20,12 @@
 	Started the recordings in training and evaluation, had to run 'conda install -c conda-forge ffmpeg'.
 	Changed 'reset_round', in 'Bat', in 'pong_env.py' so that the bats gets recentered in the middle at every round. This should affect the training greatly.
 	TODO: Get self-play working, get a decent agent trained, add powerups
+	
+2020-10-19
+	Trained a A3C agent during the weekend, 10k episodes on 4 processes, with recording.
+	Checked the recordings, they seem alright even though it is not a brilliant player yet.
+	Got self-play working, had to make changes like in the previous files.
+	Not possible to record self-play training, or at least we do not know how to fix the bug.
+	Started writing on the report
+	Started evaluating different levels of the trained agents against former versions of itself and the AutoBat
+	
