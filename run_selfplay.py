@@ -11,7 +11,7 @@ import torch.multiprocessing as mp
 from envs.pong_env import PongSinglePlayerEnv
 from wrappers.process_frame import AtariRescale42x42Wrapper
 from wrappers.process_frame import NormalizeWrapper
-
+from yaml import CLoader as Loader
 
 def create_async_agent(conf, action_space, observation_space):
     if conf['agent'] == "a3c":
@@ -25,11 +25,7 @@ def create_async_agent(conf, action_space, observation_space):
         raise ArgumentError("AsyncAgent type [%s] is not supported." %
                             conf['agent'])
 
-
-def run_async(conf):
-    print("----- Running job [%s] ----- " % conf['job_name'])
-
-    def create_env(monitor_on=False):
+def create_env(conf, monitor_on=False):
         env = gym.make(conf['env'])
         if conf['monitor_dir'] != '' and monitor_on:
             env = wrappers.Monitor(env, conf['monitor_dir'], force=True)
@@ -38,21 +34,14 @@ def run_async(conf):
             env = NormalizeWrapper(env)
         return env
 
-    env = create_env()
-    master_agent = create_async_agent(conf, env.action_space.spaces[0],
-                                      env.observation_space.spaces[0])
-    if conf['init_model_path'] != '':
-        master_agent.load_model(conf['init_model_path'])
-    env.close()
-
-    def learn_thread(process_id):
-        env = create_env(monitor_on=process_id == 0)
+def learn_thread(conf, master_agent, process_id):
+        env = create_env(conf, monitor_on=process_id == 0)
         env.seed(process_id)
         slave_agent = master_agent.create_async_learner()
         agent_team = deque(maxlen=1)
         agent_team.append(copy.deepcopy(master_agent))
         return_list = []
-        for episode in xrange(conf['num_episodes_per_process']):
+        for episode in range(conf['num_episodes_per_process']):
             cum_return = 0.0
             observation = env.reset()
             done = False
@@ -62,6 +51,7 @@ def run_async(conf):
             while not done:
                 obs_A, obs_B = observation
                 action = slave_agent.act(obs_A)
+                #action = action.to("cpu").numpy()
                 opponent_action = opponent_agent.act(obs_B)
                 next_observation, reward, done, _ = env.step(
                     (action, opponent_action))
@@ -81,9 +71,19 @@ def run_async(conf):
                 master_agent.save_model(model_filename)
         env.close()
 
+def run_async(conf):
+    print("----- Running job [%s] ----- " % conf['job_name'])
+
+    env = create_env(conf)
+    master_agent = create_async_agent(conf, env.action_space.spaces[0],
+                                      env.observation_space.spaces[0])
+    if conf['init_model_path'] != '':
+        master_agent.load_model(conf['init_model_path'])
+    env.close()
+
     processes = []
     for process_id in range(0, conf['num_processes']):
-        p = mp.Process(target=learn_thread, args=(process_id, ))
+        p = mp.Process(target=learn_thread, args=(conf, master_agent, process_id, ))
         p.start()
         processes.append(p)
     for p in processes:
@@ -100,7 +100,7 @@ if __name__ == '__main__':
         help="Configuration file in ymal format.")
     args = parser.parse_args()
 
-    conf = yaml.load(open(args.config, 'r'))
+    conf = yaml.load(open(args.config, 'r'), Loader = Loader)
 
     if not os.path.exists(conf['checkpoint_dir']):
         os.mkdir(conf['checkpoint_dir'])

@@ -107,7 +107,7 @@ class PongDoublePlayerEnv(PongSinglePlayerEnv):
         rewards, done = self._game.step(bat_directions[left_player_action],
                                         bat_directions[right_player_action])
         obs = self._get_screen_img_double_player()
-        return (obs, rewards[0], done, {})
+        return (obs, rewards, done, {})
 
     def reset(self):
         self._game.reset_game()
@@ -200,6 +200,7 @@ class PongGame():
             done = True
         else:
             done = False
+        #rewards = np.asarray(rewards)
         return rewards, done
 
     def _reset_round(self):
@@ -450,13 +451,14 @@ class Powerup(pygame.sprite.Sprite):
 
     def __init__(self, game):
         colors = [(255, 0, 0), (0, 255, 0), (0, 0, 255), (255, 255, 0)]
+        powerup_size = 12
         self._game = game
         self._type = np.random.randint(4)
         self._x = np.random.randint(40, 120)
         self._y = np.random.randint(34, 210-34-14)
         self._used = False
         self._color = colors[self._type]
-        self._rect = pygame.Rect(self._x, self._y, 6, 6)
+        self._rect = pygame.Rect(self._x, self._y, powerup_size, powerup_size)
 
     def draw(self, surface):
         if not self._used:
@@ -464,7 +466,7 @@ class Powerup(pygame.sprite.Sprite):
 
     def step(self):
         ball = self._game._ball._rect
-        if self._x < ball.centerx and self._x+6 > ball.centerx and self._y < ball.centery and self._y+6 > ball.centery and not self._used:
+        if self._x < ball.centerx and self._x+powerup_size > ball.centerx and self._y < ball.centery and self._y+powerup_size > ball.centery and not self._used:
             self._used = True
 
             #Large paddle

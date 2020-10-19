@@ -77,10 +77,11 @@ class A3CAgent(BaseAgent):
             (self._lstm_h, self._lstm_c))
         greedy_action = prob.max(1)[1].data
         if greedy:
-            action = greedy_action
+            action = greedy_action[0]
         else:
-            action = prob.multinomial(1).data
-        return action[0, 0]
+            action = prob.multinomial(1)[0, 0].data
+        action = action.to("cpu").numpy()
+        return action
 
     def create_async_learner(self):
         slave_agent = _A3CSlaveAgent(
@@ -148,14 +149,17 @@ class _A3CSlaveAgent(BaseAgent):
             Variable(torch.from_numpy(observation).unsqueeze(0)),
             (self._lstm_h, self._lstm_c))
         greedy_action = prob.max(1)[1].data
-        if greedy:
-            action = greedy_action
-        else:
-            action = prob.multinomial(1).data
-        self._action = action
         self._prob = prob
         self._value = value
-        return action[0, 0]
+        if greedy:
+            action = greedy_action[0] #behövs nog ändras
+            self._action = action
+            return action 
+        else:
+            action = prob.multinomial(1).data
+            self._action = action
+            return action[0, 0].to("cpu").numpy()
+
 
     def reset(self):
         self._lstm_h, self._lstm_c = None, None

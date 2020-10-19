@@ -112,13 +112,13 @@ def run_combat_eval(conf, num_episodes, eval_model_path, eval_opponent_path):
         opponent_agent.reset()
         while not done:
             obs_A, obs_B = observation
-            action_A = agent.act(obs_A, greedy=False)
-            action_B = opponent_agent.act(obs_B, greedy=False)
-            action_A = action_A.to("cpu").numpy()
-            action_B = action_B.to("cpu").numpy()
+            action_A = agent.act(obs_A, greedy=True)
+            action_B = opponent_agent.act(obs_B, greedy=True)
+            #action_A = action_A.to("cpu").numpy()
+            #action_B = action_B.to("cpu").numpy()
             next_observation, reward, done, _ = env.step((action_A, action_B))
             observation = next_observation
-            cum_return += reward[0] #reward if double
+            cum_return += reward #reward if double
 
         sum_return += cum_return
         print("Episode %d/%d Return: %f." %

@@ -44,7 +44,7 @@ def learn_thread(conf, master_agent, process_id):
         done = False
         while not done:
             action = slave_agent.act(observation)
-            action = action.to("cpu").numpy()
+            #action = action.to("cpu").numpy()
             next_observation, reward, done, _ = env.step(action)
             slave_agent.learn(reward, next_observation, done)
             observation = next_observation

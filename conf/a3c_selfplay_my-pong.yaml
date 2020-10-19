@@ -6,8 +6,8 @@ discount: 0.99
 t_max: 20
 num_processes: 4
 num_episodes_per_process: 1000
-init_model_path: ''
-checkpoint_freq: 20
+init_model_path: 'checkpoints\agent.model-9900'
+checkpoint_freq: 100
 checkpoint_dir: 'checkpoints_selfplay'
 use_atari_wrapper: True
-monitor_dir: 'Selfplay-Monitoring'
+monitor_dir: ''
