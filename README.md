@@ -1,4 +1,10 @@
 # SSY340_project_pong
-<p align="center">
-  ![A3C9000VSBuiltin](training_9000.gif)*A3C trained for 9000 episodes VS built in*
+
+<p align="left">
+  <img src=training_9000.gif hspace = "77">
+  <img src=training_9000.gif hspace = "77">
+  <img src=training_9000.gif hspace = "77">
+  <pre>
+     A3C-version 9000 VS Built in               A3C-version 9000 VS Built in               A3C-version 9000 VS Built in
+  </pre>
 </p>
