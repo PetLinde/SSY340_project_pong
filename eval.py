@@ -30,7 +30,6 @@ def create_env(conf, monitor_on=False):
     env = gym.make(conf['env'])
     if conf['monitor_dir'] != '' and monitor_on:
         env = wrappers.Monitor(env, conf['monitor_dir'], force=True)
-        print(env)
     if conf['use_atari_wrapper']:
         env = AtariRescale42x42Wrapper(env)
         env = NormalizeWrapper(env)
@@ -38,25 +37,34 @@ def create_env(conf, monitor_on=False):
 
 
 def run_eval(conf, num_episodes, eval_model_path):
+    device = torch.device("cuda" if torch.cuda.is_available() 
+                                  else "cpu")
     env = create_env(conf, monitor_on=True)
 
     agent = create_agent(conf, env.action_space, env.observation_space)
     agent.load_model(eval_model_path)
-
+    agent._shared_model = agent._shared_model.to(device)
     sum_return = 0.0
+    sum_score = 0.0
     for episode in range(num_episodes):
         cum_return = 0.0
         observation = env.reset()
         done = False
+        agent.reset()
+        left_score = 0.0
         while not done:
             action = agent.act(observation, greedy=True)
             next_observation, reward, done, _ = env.step(action)
             observation = next_observation
             cum_return += reward
+            if reward == 1:
+                left_score += 1
         sum_return += cum_return
+        sum_score += left_score
         print("Episode %d/%d Return: %f." %
               (episode + 1, num_episodes, cum_return))
     print("Average Return: %f." % (sum_return / num_episodes))
+    print("Average score: %f." % (sum_score / num_episodes))
     env.close()
 
 
@@ -104,26 +112,29 @@ def run_combat_eval(conf, num_episodes, eval_model_path, eval_opponent_path):
     opponent_agent.load_model(eval_opponent_path)
     opponent_agent._shared_model = opponent_agent._shared_model.to(device)
     sum_return = 0
+    sum_score = 0
     for episode in range(num_episodes):
         cum_return = 0.0
         observation = env.reset()
         done = False
         agent.reset()
         opponent_agent.reset()
+        left_score = 0.0        
         while not done:
             obs_A, obs_B = observation
             action_A = agent.act(obs_A, greedy=True)
             action_B = opponent_agent.act(obs_B, greedy=True)
-            #action_A = action_A.to("cpu").numpy()
-            #action_B = action_B.to("cpu").numpy()
             next_observation, reward, done, _ = env.step((action_A, action_B))
             observation = next_observation
             cum_return += reward #reward if double
-
+            if reward == 1:
+                left_score += 1
         sum_return += cum_return
+        sum_score += left_score
         print("Episode %d/%d Return: %f." %
               (episode + 1, num_episodes, cum_return))
     print("Average Return: %f." % (sum_return / num_episodes))
+    print("Average score: %f." % (sum_score / num_episodes))
     env.close()
 
 
@@ -138,7 +149,7 @@ if __name__ == '__main__':
     parser.add_argument(
         "--num_episodes",
         type=int,
-        default=10,
+        default=100,
         help="Number of evaluative episodes.")
     parser.add_argument(
         "--mode",

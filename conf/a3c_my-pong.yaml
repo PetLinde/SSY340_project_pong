@@ -10,4 +10,4 @@ init_model_path: ''
 checkpoint_freq: 100
 checkpoint_dir: 'checkpoints'
 use_atari_wrapper: True
-monitor_dir: 'Training-monitoring'
+monitor_dir: 'Show-Powerups-Monitoring'

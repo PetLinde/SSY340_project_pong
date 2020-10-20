@@ -10,4 +10,4 @@ init_model_path: '' #checkpoints_selfplay\agent.model-900
 checkpoint_freq: 100
 checkpoint_dir: ''
 use_atari_wrapper: True
-monitor_dir: 'Selfplay2000-vs-A3C9900-Monitoring'
+monitor_dir: 'Selfplay2000-vs-selfplay900-Monitoring'

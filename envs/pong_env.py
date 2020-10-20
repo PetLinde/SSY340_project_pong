@@ -41,7 +41,7 @@ class PongSinglePlayerEnv(gym.Env):
         bat_directions = [-1, 0, 1]
         rewards, done = self._game.step(bat_directions[action], None)
         obs = self._get_screen_img()
-        return (obs, rewards[0], done, {})
+        return (obs, rewards[0], done,{})
 
     def reset(self):
         self._game.reset_game()
@@ -107,7 +107,7 @@ class PongDoublePlayerEnv(PongSinglePlayerEnv):
         rewards, done = self._game.step(bat_directions[left_player_action],
                                         bat_directions[right_player_action])
         obs = self._get_screen_img_double_player()
-        return (obs, rewards, done, {})
+        return (obs, rewards[0], done, {})
 
     def reset(self):
         self._game.reset_game()
@@ -138,7 +138,7 @@ class PongGame():
                  bat_speed=1,
                  max_num_rounds=200,
                  max_step_per_round=1000,
-                 enable_powerups=False):
+                 enable_powerups=True):
         self._enable_powerups = enable_powerups
         self._max_num_rounds = max_num_rounds
         self._has_double_players = has_double_players
@@ -451,14 +451,14 @@ class Powerup(pygame.sprite.Sprite):
 
     def __init__(self, game):
         colors = [(255, 0, 0), (0, 255, 0), (0, 0, 255), (255, 255, 0)]
-        powerup_size = 12
+        self._powerup_size = 12
         self._game = game
-        self._type = np.random.randint(4)
+        self._type = 1 #Only the shorter pad power-up         #np.random.randint(4)
         self._x = np.random.randint(40, 120)
         self._y = np.random.randint(34, 210-34-14)
         self._used = False
         self._color = colors[self._type]
-        self._rect = pygame.Rect(self._x, self._y, powerup_size, powerup_size)
+        self._rect = pygame.Rect(self._x, self._y, self._powerup_size, self._powerup_size)
 
     def draw(self, surface):
         if not self._used:
@@ -466,7 +466,7 @@ class Powerup(pygame.sprite.Sprite):
 
     def step(self):
         ball = self._game._ball._rect
-        if self._x < ball.centerx and self._x+powerup_size > ball.centerx and self._y < ball.centery and self._y+powerup_size > ball.centery and not self._used:
+        if self._x < ball.centerx and self._x+self._powerup_size > ball.centerx and self._y < ball.centery and self._y+self._powerup_size > ball.centery and not self._used:
             self._used = True
 
             #Large paddle
