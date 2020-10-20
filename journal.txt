@@ -29,3 +29,10 @@
 	Started writing on the report.
 	Started evaluating different levels of the trained agents against former versions of itself and the AutoBat.
 	
+2020-10-20:
+	Continued writing the report.
+	Trained the agent with self-play for another 2k episodes.
+	Evaluated the performance against the previous trained agents.
+	Added a single powerup (small bat).
+	Started doing the poster.
+	
