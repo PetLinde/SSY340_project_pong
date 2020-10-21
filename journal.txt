@@ -36,3 +36,7 @@
 	Added a single powerup (small bat).
 	Started doing the poster.
 	
+2020-10-21:
+	Trained the agent for another 1k episodes, this time with the "smaller bat" power-up
+	Evaluated the trained agent against previous versions
+	Finished up the report and poster
