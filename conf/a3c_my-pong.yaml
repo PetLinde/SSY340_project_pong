@@ -8,6 +8,6 @@ num_processes: 4
 num_episodes_per_process: 10000
 init_model_path: ''
 checkpoint_freq: 100
-checkpoint_dir: 'checkpoints'
+checkpoint_dir: ''
 use_atari_wrapper: True
 monitor_dir: 'Show-Powerups-Monitoring'

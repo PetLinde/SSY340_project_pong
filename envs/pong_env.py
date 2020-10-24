@@ -41,7 +41,7 @@ class PongSinglePlayerEnv(gym.Env):
         bat_directions = [-1, 0, 1]
         rewards, done = self._game.step(bat_directions[action], None)
         obs = self._get_screen_img()
-        return (obs, rewards[0], done,{})
+        return (obs, rewards, done,{})
 
     def reset(self):
         self._game.reset_game()

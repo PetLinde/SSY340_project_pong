@@ -5,9 +5,9 @@ learning_rate: 0.0001
 discount: 0.99
 t_max: 20
 num_processes: 4
-num_episodes_per_process: 2001
-init_model_path: '' #checkpoints_selfplay\agent.model-900
-checkpoint_freq: 100
-checkpoint_dir: ''
+num_episodes_per_process: 1001
+init_model_path: '' #'checkpoints_selfplay_2\agent.model-2000'
+checkpoint_freq: 20
+checkpoint_dir: '' #'checkpoints_selfplay_powerup'
 use_atari_wrapper: True
-monitor_dir: 'Selfplay2000-vs-A3C9900-Monitoring'
+monitor_dir: 'SelfplayPowerup-vs-A3C10000-Monitoring'
