@@ -6,10 +6,10 @@ The three different versions can be seen in gifs here where they combat eachothe
 
 Games from Table 1:
 <p align="left">
-  <img src=training_9000.gif hspace = "50">
-  <img src=training_9000.gif hspace = "50">
-  <img src=training_9000.gif hspace = "50">
+  <img src=gifs/A3C0-vs-builtin.gif hspace = "50">
+  <img src=gifs/A3C500-vs-builtin.gif hspace = "50">
+  <img src=gifs/A3C1000-vs-builtin.gif hspace = "50">
   <pre>
-   A3C-version 9000 VS Built in       A3C-version 9000 VS Built in        A3C-version 9000 VS Built in
+   A3C-version 0 VS Built in       A3C-version 500 VS Built in        A3C-version 1000 VS Built in
   </pre>
 </p>
