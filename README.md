@@ -10,7 +10,7 @@ Games from Table 1:
   <img src=gifs/A3C500-vs-builtin.gif hspace = "50">
   <img src=gifs/A3C1000-vs-builtin.gif hspace = "50">
   <pre>
-        A3C-version 0 VS Built in         A3C-version 500 VS Built in          A3C-version 1000 VS Built in
+       A3C-version 0 VS Built in         A3C-version 500 VS Built in          A3C-version 1000 VS Built in
   </pre>
 </p>
 <p align="center">
@@ -18,7 +18,7 @@ Games from Table 1:
   <img src=gifs/A3C5000-vs-builtin.gif hspace = "50">
   <img src=gifs/A3C9000-vs-builtin.gif hspace = "50">
   <pre>
-          A3C-version 3000 VS Built in        A3C-version 5000 VS Built in        A3C-version 10000 VS Built in
+      A3C-version 3000 VS Built in        A3C-version 5000 VS Built in       A3C-version 10000 VS Built in
   </pre>
 </p>
   
